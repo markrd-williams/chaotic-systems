@@ -1,13 +1,5 @@
 module Model exposing (..)
 
-type Point number  = Point number number
-
-fromCoords : ( number, number ) -> Point number
-fromCoords (x, y) = Point x y 
-
-fromPolarCoords : ( Float, Float ) -> Point Float 
-fromPolarCoords polar = fromCoords (fromPolar polar)
-
 type alias Pendulum =
     { pivotLocation : Point Int
     , theta : Float
@@ -16,7 +8,7 @@ type alias Pendulum =
     , len : Int
     , damping : Float
     , driving : Float
-    , drivingFrequency : Float
+    , drivingFreq : Float
     }
 
 type alias Model =
@@ -24,6 +16,22 @@ type alias Model =
     , pendulum : Pendulum
     }
 
+initPendulum : Pendulum
+initPendulum =
+    { pivotLocation = Point 300 100
+    , theta = pi / 2
+    , thetadot = 0
+    , thetadotdot = 0
+    , len = 200
+    , damping = 0
+    , driving = 0
+    , drivingFreq = 0
+    }
+
+
 initModel : Model
 initModel =
-    Model 1
+    { pageNumber = 1
+    , pendulum = initPendulum
+    }
+    
