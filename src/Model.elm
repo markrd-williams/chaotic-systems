@@ -1,5 +1,7 @@
 module Model exposing (..)
 
+import Point exposing (Point(..))
+
 type alias Pendulum =
     { pivotLocation : Point Int
     , theta : Float
@@ -14,11 +16,12 @@ type alias Pendulum =
 type alias Model =
     { pageNumber : Int
     , pendulum : Pendulum
+    , time : Float
     }
 
 initPendulum : Pendulum
 initPendulum =
-    { pivotLocation = Point 300 100
+    { pivotLocation = Point 100 100
     , theta = pi / 2
     , thetadot = 0
     , thetadotdot = 0
@@ -33,5 +36,5 @@ initModel : Model
 initModel =
     { pageNumber = 1
     , pendulum = initPendulum
+    , time = 0
     }
-    

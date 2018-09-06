@@ -1,5 +1,6 @@
-module Pendulum exposing (Pendulum)
+module Pendulum exposing (Pendulum, renderPendulum, updatePendulum)
 
+import Messages exposing (Msg(..))
 import Point exposing (Point(..))
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -17,47 +18,62 @@ type alias Pendulum =
 
 calcThetadotdot : Pendulum -> Float -> Float
 calcThetadotdot { theta, thetadot, thetadotdot
-                , len, damping, driving, drivingFreq 
+                , len, damping, driving, drivingFreq
                 } time =
-    let 
-        accelerationMass = ((-9.8/100) / len) * sin theta
-        accelerationDamping = damping * thetadot
-        accelerationDamping = driving * 100 / len * cos (drivingFreq * time)
-
-rungeKutta : (Float -> Float -> Float) 
-           -> Float -> Point number 
-           -> Point number
-rungeKutta f h (Point x y) =
     let
-        k1 = h * (f x y)
-        k2 = h * (f (x + h/2) (y + k1/2))
-        k3 = h * (f (x + h/2) (y + k2/2))
-        k4 = h * (f (x + h) (y + k3))
+        accelerationMass    = ((-9.8/100) / (toFloat len)) * sin theta
+        accelerationDamping = damping * thetadot
+        accelerationDriving = driving * 100.0 / (toFloat len) * cos (drivingFreq * time)
     in
-        Point (x + h) 
-              (y + (k1 + 2 * k2 + 2 * k3 + k4)/6)
+        accelerationMass - accelerationDamping + accelerationDriving
 
+updatePendulum : Pendulum -> Float -> Float -> Pendulum
+updatePendulum pendulum time step =
+    let
+        thetadotdot =
+            calcThetadotdot pendulum time
+
+        thetadot =
+            pendulum.thetadot + thetadotdot * step
+
+        theta =
+            pendulum.theta + thetadot * step
+
+        thetaFix =
+            if theta > pi then
+                theta - 2 * pi
+            else if theta <= -pi then
+                2 * pi + theta
+            else
+                theta
+    in
+        { pendulum
+          | theta = thetaFix
+          , thetadot = thetadot
+          , thetadotdot = thetadotdot
+        }
 
 
 renderPendulum : Pendulum -> List (Svg Msg)
 renderPendulum {theta, len, pivotLocation} =
     let
-        coords = (Point.fromPolarCoords (theta, len)) + pivotLocation
+        pendulumCoords = Point.add (Point.toInt (Point.fromPolarCoords (theta, toFloat len))) pivotLocation
+        pCoordsLog = Debug.log (Point.logPointI pendulumCoords)
     in
-        [ circle 
-            [ cx (toString (x coords))
-            , cy (toString (y coords))
+        [ circle
+            [ cx (String.fromInt (Point.getX pendulumCoords))
+            , cy (String.fromInt (Point.getY pendulumCoords))
             , r "20"
             , stroke "black"
             , fill "black"
             ]
-        , line 
-            [ 
+            []
+        , line
+            [ x1 (String.fromInt (Point.getX pivotLocation))
+            , y1 (String.fromInt (Point.getY pivotLocation))
+            , x2 (String.fromInt (Point.getX pendulumCoords))
+            , y2 (String.fromInt (Point.getY pendulumCoords))
+            , Svg.Attributes.style "stroke:rgb(0,0,0);stroke-width:2"
             ]
+            []
         ]
-
-
-        
-
-
-        

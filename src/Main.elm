@@ -1,6 +1,5 @@
 import Browser
-import Html exposing (..)
-import Html.Attributes exposing (..)
+import Browser.Events exposing (onAnimationFrameDelta)
 import Messages exposing (Msg(..))
 import Model exposing (Model, initModel)
 import Update exposing (update)
@@ -25,5 +24,5 @@ init _ =
 -- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub Msg
-subscriptions model = 
-    Sub.none
+subscriptions model =
+    onAnimationFrameDelta Tick
