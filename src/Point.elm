@@ -5,8 +5,8 @@ type Point number  = Point number number
 fromCoords : ( number, number ) -> Point number
 fromCoords (x, y) = Point x y
 
-fromPolarCoords : ( Float, Float ) -> Point Float
-fromPolarCoords polar = fromCoords (fromPolar polar)
+fromPolar: ( Float, Float ) -> Point Float
+fromPolar (r, t) = Point (r * (sin t)) (r * (cos t))
 
 toPolarCoords : Point Float -> (Float, Float)
 toPolarCoords (Point x y) = toPolar (x, y)

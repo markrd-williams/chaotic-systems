@@ -24,5 +24,8 @@ init _ =
 -- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    onAnimationFrameDelta Tick
+subscriptions {paused} =
+    if paused then
+        Sub.none
+    else
+        onAnimationFrameDelta Tick

@@ -1,23 +1,32 @@
 module View exposing (view, pageMax)
 
+import Editor exposing (Editor, viewEditBlock)
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes as H exposing (..)
 import Html.Events exposing (..)
 import Model exposing (Model)
 import Messages exposing (Msg(..))
 import Pendulum exposing (Pendulum, renderPendulum)
 import Svg
-import Svg.Attributes
+import Svg.Attributes as S
 
 import Point exposing (Point(..))
 
 view : Model -> Html Msg
 view model =
     div []
-        [ viewExplanation model.pageNumber
-        , viewSimulation model
+        [ div [] [ div [ style "display" "block"
+                       , style "float" "left"
+                       , style "position" "relative"
+                       , style "border-style" "solid"
+                       , style "margin" "10px"
+                       ]
+                       [viewSimulation model]
+                 , (viewMenu model.paused)
+                 , viewEditor model.editor
+                 , viewExplanation model.pageNumber
+                 ]
         , viewFooter
-        , div [] [ text (Point.logPointI (Point.add (Point 1 2) (Point 3 4))) ]
         ]
 
 viewExplanation : Int -> Html Msg
@@ -25,25 +34,69 @@ viewExplanation pageNumber =
     let
         explanation = Maybe.withDefault "error" (getText pageNumber)
     in
-        div []
-            [ span [] [ button [ onClick PrevPage ] [ text "<|" ] ]
-            , span [ style "border-style" "solid"
+        div [ style "width" "25%"
+            , style "height" "560px"
+            , style "float" "right"
+            ]
+            [ span [ style "border-style" "solid"
                    , style "border-width" "1px"
                    , style "padding" "5px"
                    , style "display" "inline-block"
                    ]
                    [ text explanation ]
-            , span [] [ button [ onClick NextPage ] [ text "|>" ] ]
+            , span [] [ button [ onClick PrevPage ] [ text "<|" ] ]
+            , span [ style "float" "right" ]
+                   [ button [ onClick NextPage ] [ text "|>" ] ]
             ]
 
-viewSimulation : Model -> Svg.Svg Msg
-viewSimulation model =
-    Svg.svg
-        [ Svg.Attributes.width "600"
-        , Svg.Attributes.height "600"
-        , Svg.Attributes.viewBox "0 0 600 600"
+viewEditor : List Editor -> Html Msg
+viewEditor editor =
+    div [ style "overflow-y" "scroll"
+        , style "width" "25%"
+        , style "height" "540px"
+        , style "margin" "7px 0"
+        , style "display" "block"
+        , style "position" "relative"
+        , style "float" "left"
         ]
-        (renderPendulum model.pendulum)
+        [ div []
+              [ button [onClick AddPendulum] [text "add pendulum"]
+              , button [onClick RemovePendulum] [text "remove"]
+              ]
+        , div []
+            (List.indexedMap viewEditBlock editor)
+        ]
+
+viewSimulation : Model -> Svg.Svg Msg
+viewSimulation {pendulums, time} =
+    Svg.svg
+        [ S.width "600"
+        , S.height "550"
+        , S.viewBox "0 0 600 550"
+        ]
+        (List.concatMap (renderPendulum time) pendulums)
+
+viewMenu : Bool -> Html Msg
+viewMenu paused =
+    let
+        pauseText =
+            if paused then
+                "play"
+            else
+                "pause"
+    in
+    div []
+        [ button [ onClick Pause ] [ text pauseText ]
+        , button [ onClick StepF
+                 , disabled (not paused)
+                 ]
+                 [ text "step" ]
+        , button [ onClick StepB
+                 , disabled (not paused)
+                 ]
+                 [ text "step back" ]
+        ]
+
 
 viewFooter : Html Msg
 viewFooter =
