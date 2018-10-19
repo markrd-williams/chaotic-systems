@@ -18,8 +18,7 @@ updateEditor checkName newVal editor =
         [] -> []
         (({name} as editorCell)::xs) ->
             if name == checkName then
-                {editorCell | val = newVal} :: xs
-            else
+                {editorCell | val = newVal} :: xs else
                 editorCell :: (updateEditor checkName newVal xs)
 
 viewEditBlock : Int -> Editor -> Html Msg

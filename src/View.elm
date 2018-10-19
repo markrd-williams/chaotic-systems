@@ -23,7 +23,7 @@ view model =
                        ]
                        [viewSimulation model]
                  , (viewMenu model.paused)
-                 , viewEditor model.editor
+                 , viewEditor model.editors
                  , viewExplanation model.pageNumber
                  ]
         , viewFooter
@@ -50,7 +50,7 @@ viewExplanation pageNumber =
             ]
 
 viewEditor : List Editor -> Html Msg
-viewEditor editor =
+viewEditor editors =
     div [ style "overflow-y" "scroll"
         , style "width" "25%"
         , style "height" "540px"
@@ -64,7 +64,7 @@ viewEditor editor =
               , button [onClick RemovePendulum] [text "remove"]
               ]
         , div []
-            (List.indexedMap viewEditBlock editor)
+            (List.indexedMap viewEditBlock editors)
         ]
 
 viewSimulation : Model -> Svg.Svg Msg
@@ -96,7 +96,6 @@ viewMenu paused =
                  ]
                  [ text "step back" ]
         ]
-
 
 viewFooter : Html Msg
 viewFooter =

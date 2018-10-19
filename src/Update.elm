@@ -3,7 +3,7 @@ module Update exposing (update)
 import Editor
 import Model exposing (..)
 import Messages exposing (..)
-import Pendulum exposing (Pendulum, updatePendulum)
+import Pendulum exposing (Pendulum(..), updatePendulum)
 import Utils exposing (init)
 import View
 
@@ -35,34 +35,36 @@ update msg model =
                 )
 
         Tick time ->
-            ( { model | pendulums = List.map (updatePendulum model.time (time / 100)) model.pendulums
-                      , time = model.time + (time / 100)
-              }
-            , Cmd.none
-            )
+            let
+                debug = Debug.log "pendulums" model.pendulums
+            in
+                ( { model | pendulums = List.map (updatePendulum model.time (time / 100)) model.pendulums
+                  , time = model.time + (time / 100)
+                  }
+                , Cmd.none
+                )
 
         Update name index val ->
             ( { model | pendulums =
                           let
                               updatePend i p =
                                   if i == index then
-                                      let
-                                          maybeVal = String.toFloat val
-                                          maybePend =
-                                              case maybeVal of
-                                                  Just v -> Pendulum.updateVal name v p
-                                                  Nothing -> Nothing
-                                      in
-                                          case maybePend of
-                                              Just p2 -> p2
-                                              Nothing -> p
+                                      case p of
+                                          Single _ ->
+                                              Maybe.withDefault
+                                                  p
+                                                  ( String.toFloat val
+                                                  |> Maybe.andThen (Pendulum.updateVal name Nothing p)
+                                                  )
+                                          _ ->
+                                              p
                                   else
                                       p
                           in
                               List.indexedMap updatePend model.pendulums
-                      , editor = List.indexedMap (\i e -> if i == index
-                                                          then Editor.updateEditor name val e
-                                                          else e) model.editor
+                      , editors = List.indexedMap (\i e -> if i == index
+                                                           then Editor.updateEditor name val e
+                                                           else e) model.editors
               }
             , Cmd.none
             )
@@ -88,13 +90,14 @@ update msg model =
 
         AddPendulum ->
             ( { model | pendulums = model.pendulums ++ [Pendulum.initPendulum]
-                      , editor = model.editor ++ [Pendulum.editor Pendulum.initPendulum]
+                      , editors = model.editors ++ (Pendulum.editorPendulum Pendulum.initPendulum)
               }
             , Cmd.none
             )
 
         RemovePendulum ->
             ( { model | pendulums = init model.pendulums
-                      , editor = init model.editor }
+                      , editors = init model.editors }
             , Cmd.none
             )
+
