@@ -35,14 +35,11 @@ update msg model =
                 )
 
         Tick time ->
-            let
-                debug = Debug.log "pendulums" model.pendulums
-            in
-                ( { model | pendulums = List.map (updatePendulum model.time (10 / 100)) model.pendulums
-                  , time = model.time + (10 / 100)
-                  }
-                , Cmd.none
-                )
+            ( { model | pendulums = List.map (updatePendulum model.time (10 / 100)) model.pendulums
+                      , time = model.time + (10 / 100)
+              }
+            , Cmd.none
+            )
 
         Update name index doubleIndex val ->
             ( { model | pendulums =
