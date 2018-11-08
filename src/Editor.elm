@@ -31,6 +31,14 @@ viewEditBlock index e =
 
                 ({name, val, min, max, step}::xs) ->
                     let
+                        pendulumIndex =
+                            if String.contains "1" name then
+                                Just 1
+                            else if String.contains "2" name then
+                                Just 2
+                            else
+                                Nothing
+
                         editValue =
                             div []
                                 [ text (name ++ "  ")
@@ -39,7 +47,7 @@ viewEditBlock index e =
                                         , H.max max
                                         , H.step step
                                         , value val
-                                        , onInput (Update name index)] []
+                                        , onInput (Update name index pendulumIndex)] []
                                 , span [] [text val]
                                 ]
                     in
@@ -50,4 +58,4 @@ viewEditBlock index e =
             , style "padding" "10px"
             , style "width" "90%"
             ]
-            (go e)
+            ((go e) ++ [ button [ onClick (ToggleDouble index)] [ text "Toggle double/single"]])

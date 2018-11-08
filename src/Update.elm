@@ -4,7 +4,7 @@ import Editor
 import Model exposing (..)
 import Messages exposing (..)
 import Pendulum exposing (Pendulum(..), updatePendulum)
-import Utils exposing (init)
+import Utils exposing (init, applyIndex)
 import View
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -38,13 +38,13 @@ update msg model =
             let
                 debug = Debug.log "pendulums" model.pendulums
             in
-                ( { model | pendulums = List.map (updatePendulum model.time (time / 100)) model.pendulums
-                  , time = model.time + (time / 100)
+                ( { model | pendulums = List.map (updatePendulum model.time (10 / 100)) model.pendulums
+                  , time = model.time + (10 / 100)
                   }
                 , Cmd.none
                 )
 
-        Update name index val ->
+        Update name index doubleIndex val ->
             ( { model | pendulums =
                           let
                               updatePend i p =
@@ -56,8 +56,12 @@ update msg model =
                                                   ( String.toFloat val
                                                   |> Maybe.andThen (Pendulum.updateVal name Nothing p)
                                                   )
-                                          _ ->
-                                              p
+                                          Double _ _ ->
+                                              Maybe.withDefault
+                                                  p
+                                                  ( String.toFloat val
+                                                  |> Maybe.andThen (Pendulum.updateVal name doubleIndex p)
+                                                  )
                                   else
                                       p
                           in
@@ -101,3 +105,13 @@ update msg model =
             , Cmd.none
             )
 
+        ToggleDouble index ->
+            let
+                pendulums = applyIndex Pendulum.toggleDouble index model.pendulums
+                editors = List.concatMap Pendulum.editorPendulum pendulums
+            in
+                ( { model | pendulums = pendulums
+                          , editors = editors
+                  }
+                , Cmd.none
+                )

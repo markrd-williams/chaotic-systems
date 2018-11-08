@@ -6,9 +6,10 @@ type Msg
     = NextPage
     | PrevPage
     | Tick Float
-    | Update String Int String
+    | Update String Int (Maybe Int) String
     | Pause
     | StepF
     | StepB
     | AddPendulum
     | RemovePendulum
+    | ToggleDouble Int

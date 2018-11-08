@@ -1,4 +1,4 @@
-module Pendulum exposing (Pendulum(..), initPendulum, renderPendulum, updatePendulum, updateVal, editorPendulum)
+module Pendulum exposing (Pendulum(..), initPendulum, renderPendulum, updatePendulum, updateVal, editorPendulum, toggleDouble)
 
 import Editor exposing (..)
 import Html exposing (..)
@@ -26,17 +26,8 @@ type Pendulum = Single Bob
 
 initPendulum : Pendulum
 initPendulum =
-    Double { pivotLocation = Point 300 220
+    Single { pivotLocation = Point 300 220
            , theta = pi / 2
-           , thetadot = 0
-           , len = 150
-           , damping = 0
-           , driving = 0
-           , drivingFreq = 0
-           , mass = 1
-           }
-           { pivotLocation = Point.toInt (Point.add (Point.fromPolar (150.0, pi/2)) (Point 300.0 220.0))
-           , theta = pi / 4
            , thetadot = 0
            , len = 150
            , damping = 0
@@ -111,8 +102,7 @@ updatePendulum time step p =
                 thetadot1 =
                     rungeKutta (calcThetadotdot p (Just 1)) (time, b1.thetadot) step
 
-                theta1
-                    =
+                theta1 =
                     rungeKutta (\_ _-> b1.thetadot) (time, b1.theta) step
 
                 b1Location =
@@ -154,6 +144,29 @@ rungeKutta f (t, y) step =
 euler : (Float -> Float -> Float) -> (Float, Float) -> Float -> Float
 euler f (t, y) step =
     y + step * f t y
+
+toggleDouble : Pendulum -> Pendulum
+toggleDouble p =
+    case p of
+        Single bob ->
+            let
+                bob1Location = Point.add (Point.toInt (Point.fromPolar (toFloat bob.len, bob.theta))) bob.pivotLocation
+
+                b2 =
+                    { pivotLocation = bob1Location
+                    , theta = pi / 2
+                    , thetadot = 0
+                    , len = 150
+                    , damping = 0
+                    , driving = 0
+                    , drivingFreq = 0
+                    , mass = 1
+                    }
+            in
+                Double bob b2
+
+        Double b1 _ ->
+            Single b1
 
 
 renderBob :  Float -> Bob -> List (Svg Msg)
@@ -218,42 +231,62 @@ drawArrow (Point x1 y1) (Point x2 y2) =
               ] []
         ]
 
-editBob : Bob -> Editor
-editBob bob =
-    [ { name = "length"
-      , val = String.fromInt bob.len
-      , min = "50"
-      , max = "200"
-      , step = "1"
-      }
-    , { name = "damping"
-      , val = String.fromFloat bob.damping
-      , min = "0.0"
-      , max = "0.5"
-      , step = "0.01"
-      }
-    , { name = "drive force"
-      , val = String.fromFloat bob.driving
-      , min = "0.0"
-      , max = "50.0"
-      , step = "0.1"
-      }
-    , { name ="drive freq"
-      , val = String.fromFloat bob.drivingFreq
-      , min = "0.0"
-      , max = "1.0"
-      , step = "0.01"
-      }
-    ]
-
 editorPendulum : Pendulum -> List (Editor)
 editorPendulum p =
     case p of
         Single bob ->
-            [editBob bob]
+            [[ { name = "length"
+               , val = String.fromInt bob.len
+               , min = "50"
+               , max = "200"
+               , step = "1"
+               }
+             , { name = "damping"
+               , val = String.fromFloat bob.damping
+               , min = "0.0"
+               , max = "0.5"
+               , step = "0.01"
+               }
+             , { name = "drive force"
+               , val = String.fromFloat bob.driving
+               , min = "0.0"
+               , max = "50.0"
+               , step = "0.1"
+              }
+             , { name ="drive freq"
+               , val = String.fromFloat bob.drivingFreq
+               , min = "0.0"
+               , max = "1.0"
+               , step = "0.01"
+              }
+             ]]
 
         Double b1 b2 ->
-            [editBob b1] ++ [editBob b2]
+            [[ { name = "length 1"
+               , val = String.fromInt b1.len
+               , min = "50"
+               , max = "200"
+               , step = "1"
+               }
+             , { name = "mass 1"
+               , val = String.fromFloat b1.mass
+               , min = "0.1"
+               , max = "10"
+               , step = "0.1"
+               }
+             , { name = "length 2"
+               , val = String.fromInt b2.len
+               , min = "50"
+               , max = "200"
+               , step = "1"
+               }
+             , { name = "mass 2"
+               , val = String.fromFloat b2.mass
+               , min = "0.1"
+               , max = "10"
+               , step = "0.1"
+               }
+             ]]
 
 updateVal : String -> Maybe Int -> Pendulum -> Float -> (Maybe Pendulum)
 updateVal name index p val =
@@ -278,14 +311,19 @@ updateVal name index p val =
 
 updateBob : String -> Bob -> Float -> Maybe Bob
 updateBob name bob val =
-    case name of
-        "length" ->
-            Just { bob | len = (round val) }
-        "damping" ->
-            Just { bob | damping = val }
-        "drive force" ->
-            Just { bob | driving = val }
-        "drive freq" ->
-            Just { bob | drivingFreq = val }
-        _ ->
-            Nothing
+    if String.contains "length" name then
+        Just { bob | len = (round val)}
+    else if String.contains "mass" name then
+        Just { bob | mass = val}
+    else
+        case name of
+            "damping" ->
+                Just { bob | damping = val }
+            "drive force" ->
+                Just { bob | driving = val }
+            "drive freq" ->
+                Just { bob | drivingFreq = val }
+            "mass" ->
+                Just { bob | mass = val }
+            _ ->
+                Nothing
