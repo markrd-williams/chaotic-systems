@@ -23,7 +23,6 @@ type alias Bob =
 type Pendulum = Single Bob
               | Double Bob Bob
 
-
 initPendulum : Pendulum
 initPendulum =
     Single { pivotLocation = Point 300 220
@@ -57,17 +56,26 @@ calcThetadotdot p index time thetadot =
                         b1len = (toFloat b1.len) / 100
                         b2len = (toFloat b2.len) / 100
                         g = 9.81
+                        n1 = -g*(2 * b1.mass + b2.mass) * sin b1.theta
+                        n2 = -g * b2.mass * sin (b1.theta - 2 * b2.theta)
+                        n3 = -2 * b2.mass * b2.thetadot * b2.thetadot * b2len * sin (b1.theta - b2.theta)
+                        n4 = -b2.mass * thetadot * thetadot * b1len * sin ( 2 * (b1.theta - b2.theta) )
+                        d = b1len * (2 * b1.mass + b2.mass - b2.mass * cos (2 * (b1.theta - b2.theta)))
                     in
-                       (-g*(2 * b1.mass + b2.mass)* (sin b1.theta) - b2.mass*g* (sin (b1.theta-2 * b2.theta)) - 2 * (sin (b1.theta - b2.theta)) * b2.mass * (b2.thetadot*b2.thetadot*b2len + thetadot*thetadot*b1len*( cos (b1.theta-b2.theta))))/(b1len*(2* b1.mass + b2.mass - b2.mass*cos (2*b1.theta-2*b2.theta)))
+                        (n1+n2+n3+n4)/d
 
                 Just 2 -> -- b2.thetadot is passed in as thetadot
                     let
                         b1len = (toFloat b1.len) / 100
                         b2len = (toFloat b2.len) / 100
                         g = 9.81
+                        n1 = 2 * sin (b1.theta - b2.theta)
+                        n2 = (b1.mass + b2.mass) * b1.thetadot * b1.thetadot * b1len
+                        n3 = g * (b1.mass + b2.mass) * cos b1.theta
+                        n4 = b2.mass * thetadot * thetadot * b2len * cos (b1.theta - b2.theta)
+                        d = b2len * (2 * b1.mass + b2.mass - b2.mass * cos (2 * (b1.theta - b2.theta)))
                     in
-                        (2*(sin (b1.theta - b2.theta))*(b1.thetadot*b1.thetadot*b1len*(b1.mass+b2.mass) + g*(b1.mass+b2.mass)*(cos b1.theta) + thetadot*thetadot*b2len*b2.mass*(cos (b1.theta-b2.theta))))/(b2len*(2 * b1.mass + b2.mass - b2.mass*cos(2* b1.theta- 2*b2.theta)))
-
+                        n1 * (n2 + n3 + n4) / d
                 _ ->
                     thetadot
 
@@ -91,20 +99,20 @@ updatePendulum time step p =
         Double b1 b2 ->
             let
                 thetadot1 =
-                    euler (calcThetadotdot p (Just 1)) (time, b1.thetadot) step
+                    rungeKutta (calcThetadotdot p (Just 1)) (time, b1.thetadot) step
 
                 theta1 =
-                    euler (\_ _-> thetadot1) (time, b1.theta) step
+                    rungeKutta (\_ _-> b1.thetadot) (time, b1.theta) step
 
                 b1Location =
                     Point.add
                         (Point.toInt (Point.fromPolar (toFloat b1.len, theta1))) b1.pivotLocation
 
                 thetadot2 =
-                    euler (calcThetadotdot p (Just 2)) (time, b2.thetadot) step
+                    rungeKutta (calcThetadotdot p (Just 2)) (time, b2.thetadot) step
 
                 theta2 =
-                    euler (\_ _-> thetadot2) (time, b2.theta) step
+                    rungeKutta (\_ _-> b2.thetadot) (time, b2.theta) step
 
                 newB1 = { b1 | theta = theta1
                              , thetadot = thetadot1
