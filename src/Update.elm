@@ -35,8 +35,8 @@ update msg model =
                 )
 
         Tick time ->
-            ( { model | pendulums = List.map (updatePendulum model.time (10 / 2000)) model.pendulums
-                      , time = model.time + (10 / 2000)
+            ( { model | pendulums = List.map (updatePendulum model.time (30 / 2000)) model.pendulums
+                      , time = model.time + (30 / 2000)
               }
             , Cmd.none
             )

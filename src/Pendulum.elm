@@ -1,4 +1,4 @@
-module Pendulum exposing (Pendulum(..), initPendulum, renderPendulum, updatePendulum, updateVal, editorPendulum, toggleDouble)
+module Pendulum exposing (..)
 
 import Editor exposing (..)
 import Html exposing (..)
@@ -23,17 +23,21 @@ type alias Bob =
 type Pendulum = Single Bob
               | Double Bob Bob
 
+initBob :  Bob
+initBob =
+    { pivotLocation = Point 300 220
+    , theta = pi / 4
+    , thetadot = 0
+    , len = 150
+    , damping = 0
+    , driving = 0
+    , drivingFreq = 0
+    , mass = 1
+    }
+
 initPendulum : Pendulum
 initPendulum =
-    Single { pivotLocation = Point 300 220
-           , theta = pi / 4
-           , thetadot = 0
-           , len = 150
-           , damping = 0
-           , driving = 0
-           , drivingFreq = 0
-           , mass = 1
-           }
+    Single initBob
 
 --                            Int here is index of which bob's thetadot we are calculating
 --                            Also tells us which thetadot has been passed in and which is going to be partially applied
@@ -59,7 +63,7 @@ calcThetadotdot p index time thetadot =
                         n1 = -g*(2 * b1.mass + b2.mass) * sin b1.theta
                         n2 = -g * b2.mass * sin (b1.theta - 2 * b2.theta)
                         n3 = -2 * b2.mass * b2.thetadot * b2.thetadot * b2len * sin (b1.theta - b2.theta)
-                        n4 = -b2.mass * thetadot * thetadot * b1len * sin ( 2 * (b1.theta - b2.theta) )
+                        n4 = -2 * sin(b1.theta - b2.theta)* thetadot * thetadot * b1len * cos(b1.theta - b2.theta)
                         d = b1len * (2 * b1.mass + b2.mass - b2.mass * cos (2 * (b1.theta - b2.theta)))
                     in
                         (n1+n2+n3+n4)/d
@@ -102,7 +106,7 @@ updatePendulum time step p =
                     rungeKutta (calcThetadotdot p (Just 1)) (time, b1.thetadot) step
 
                 theta1 =
-                    rungeKutta (\_ _-> b1.thetadot) (time, b1.theta) step
+                    rungeKutta (\_ _-> thetadot1) (time, b1.theta) step
 
                 b1Location =
                     Point.add
@@ -112,7 +116,7 @@ updatePendulum time step p =
                     rungeKutta (calcThetadotdot p (Just 2)) (time, b2.thetadot) step
 
                 theta2 =
-                    rungeKutta (\_ _-> b2.thetadot) (time, b2.theta) step
+                    rungeKutta (\_ _-> thetadot2) (time, b2.theta) step
 
                 newB1 = { b1 | theta = theta1
                              , thetadot = thetadot1
