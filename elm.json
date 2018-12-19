@@ -21,7 +21,9 @@
         }
     },
     "test-dependencies": {
-        "direct": {},
+        "direct": {
+            "the-sett/lazy-list": "1.0.0"
+        },
         "indirect": {}
     }
 }
