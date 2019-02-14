@@ -19,7 +19,7 @@ view model =
                        , style "float" "left"
                        , style "position" "relative"
                        , style "border-style" "solid"
-                       , style "margin" "10px"
+                       , style "margin" "1%"
                        ]
                        [viewSimulation model]
                  , (viewMenu model.paused)
@@ -35,8 +35,8 @@ viewExplanation pageNumber =
         explanation = Maybe.withDefault "error" (getText pageNumber)
     in
         div [ style "width" "25%"
-            , style "height" "560px"
-            , style "float" "right"
+            , style "height" "580px"
+            , style "float" "left"
             ]
             [ span [ style "border-style" "solid"
                    , style "border-width" "1px"
@@ -52,9 +52,9 @@ viewExplanation pageNumber =
 viewEditor : List Editor -> Html Msg
 viewEditor editors =
     div [ style "overflow-y" "scroll"
-        , style "width" "25%"
+        , style "width" "24%"
         , style "height" "540px"
-        , style "margin" "7px 0"
+        , style "margin" "1% 0"
         , style "display" "block"
         , style "position" "relative"
         , style "float" "left"
