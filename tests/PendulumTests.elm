@@ -65,6 +65,22 @@ suite =
                         in
                             calcThetadotdot doubleP (Just 1) 0 0
                                 |> Expect.within (Absolute 0.0001) -4.624478349
+              , test "Double pend1 test" <|
+                    \_ ->
+                        let
+                            doubleP = Double {initBob | thetadot = 0.2, theta = pi/2} {initBob | theta = pi/7, thetadot = -2.5, pivotLocation = Point.add (Point.toInt (Point.fromPolar (150, pi/2))) (Point 300 220)}
+                        in
+                            calcThetadotdot doubleP (Just 1) 0 0.2
+                                |> Expect.within (Absolute 0.0001) -9.65671
+
+              , test "Double pend2 test" <|
+                    \_ ->
+                        let
+                            doubleP = Double {initBob | thetadot = 0.2, theta = pi/2} {initBob | theta = pi/7, thetadot = -2.5, pivotLocation = Point.add (Point.toInt (Point.fromPolar (150, pi/2))) (Point 300 220)}
+                        in
+                            calcThetadotdot doubleP (Just 2) 0 -2.5
+                                |> Expect.within (Absolute 0.0001) 1.38833
+
               , test "Double initial pend2 test" <|
                     \_ ->
                         let
