@@ -4396,21 +4396,21 @@ var author$project$Pendulum$editorPendulum = function (p) {
 					aJ: elm$core$String$fromInt(bob.h)
 				},
 					{
-					aY: '0.5',
+					aY: '1.0',
 					aZ: '0.0',
 					ar: 'damping',
 					a4: '0.01',
 					aJ: elm$core$String$fromFloat(bob.C)
 				},
 					{
-					aY: '50.0',
+					aY: '20.0',
 					aZ: '0.0',
 					ar: 'drive force',
 					a4: '0.1',
 					aJ: elm$core$String$fromFloat(bob.D)
 				},
 					{
-					aY: '1.0',
+					aY: '5.0',
 					aZ: '0.0',
 					ar: 'drive freq',
 					a4: '0.01',
@@ -4466,17 +4466,17 @@ var author$project$Point$Point = F2(
 	});
 var elm$core$Basics$fdiv = _Basics_fdiv;
 var elm$core$Basics$pi = _Basics_pi;
-var author$project$Pendulum$initPendulum = author$project$Pendulum$Single(
-	{
-		C: 0,
-		D: 0,
-		E: 0,
-		h: 150,
-		b: 1,
-		A: A2(author$project$Point$Point, 300, 220),
-		a: elm$core$Basics$pi / 2,
-		l: 0
-	});
+var author$project$Pendulum$initBob = {
+	C: 0,
+	D: 0,
+	E: 0,
+	h: 150,
+	b: 1,
+	A: A2(author$project$Point$Point, 300, 220),
+	a: elm$core$Basics$pi / 4,
+	l: 0
+};
+var author$project$Pendulum$initPendulum = author$project$Pendulum$Single(author$project$Pendulum$initBob);
 var elm$core$Basics$False = 1;
 var author$project$Model$initModel = {
 	ai: author$project$Pendulum$editorPendulum(author$project$Pendulum$initPendulum),
@@ -5386,7 +5386,7 @@ var author$project$Pendulum$toggleDouble = function (p) {
 				author$project$Point$fromPolar(
 					_Utils_Tuple2(bob.h, bob.a))),
 			bob.A);
-		var b2 = {C: 0, D: 0, E: 0, h: 150, b: 1, A: bob1Location, a: elm$core$Basics$pi / 2, l: 0};
+		var b2 = {C: 0, D: 0, E: 0, h: 150, b: 1, A: bob1Location, a: elm$core$Basics$pi / 7, l: 0};
 		return A2(author$project$Pendulum$Double, bob, b2);
 	} else {
 		var b1 = p.a;
@@ -5396,7 +5396,6 @@ var author$project$Pendulum$toggleDouble = function (p) {
 var elm$core$Basics$negate = function (n) {
 	return -n;
 };
-var elm$core$Basics$pow = _Basics_pow;
 var author$project$Pendulum$calcThetadotdot = F4(
 	function (p, index, time, thetadot) {
 		if (!p.$) {
@@ -5405,8 +5404,8 @@ var author$project$Pendulum$calcThetadotdot = F4(
 			var damping = p.a.C;
 			var driving = p.a.D;
 			var drivingFreq = p.a.E;
-			var accelerationMass = ((-9.81) / len) * elm$core$Basics$sin(theta);
-			var accelerationDriving = (driving / len) * elm$core$Basics$cos(drivingFreq * time);
+			var accelerationMass = ((-9.81) / (len / 100)) * elm$core$Basics$sin(theta);
+			var accelerationDriving = (driving / (len / 100)) * elm$core$Basics$cos(drivingFreq * time);
 			var accelerationDamping = damping * thetadot;
 			return (accelerationMass - accelerationDamping) + accelerationDriving;
 		} else {
@@ -5419,22 +5418,23 @@ var author$project$Pendulum$calcThetadotdot = F4(
 						case 1:
 							var g = 9.81;
 							var n1 = ((-g) * ((2 * b1.b) + b2.b)) * elm$core$Basics$sin(b1.a);
-							var n2 = ((-b2.b) * g) * elm$core$Basics$sin(b1.a - (2 * b2.a));
-							var b2len = b2.h;
-							var b1len = b1.h;
-							var d1 = b1len * (((2 * b1.b) + b2.b) - (b2.b * elm$core$Basics$cos((2 * b1.a) - (2 * b2.a))));
-							var n3 = (((-2) * elm$core$Basics$sin(b1.a - b2.a)) * b2.b) * ((A2(elm$core$Basics$pow, b2.l, 2) * b2len) + ((A2(elm$core$Basics$pow, thetadot, 2) * b1len) * elm$core$Basics$cos(b1.a - b2.a)));
-							return ((n1 + n2) + n3) / d1;
+							var n2 = ((-g) * b2.b) * elm$core$Basics$sin(b1.a - (2 * b2.a));
+							var b2len = b2.h / 100;
+							var n3 = (((((-2) * b2.b) * b2.l) * b2.l) * b2len) * elm$core$Basics$sin(b1.a - b2.a);
+							var b1len = b1.h / 100;
+							var d = b1len * (((2 * b1.b) + b2.b) - (b2.b * elm$core$Basics$cos(2 * (b1.a - b2.a))));
+							var n4 = (((((-2) * elm$core$Basics$sin(b1.a - b2.a)) * thetadot) * thetadot) * b1len) * elm$core$Basics$cos(b1.a - b2.a);
+							return (((n1 + n2) + n3) + n4) / d;
 						case 2:
 							var n1 = 2 * elm$core$Basics$sin(b1.a - b2.a);
 							var g = 9.81;
 							var n3 = (g * (b1.b + b2.b)) * elm$core$Basics$cos(b1.a);
-							var b2len = b2.h;
-							var d1 = b2len * (((2 * b1.b) + b2.b) - (b2.b * elm$core$Basics$cos((2 * b1.a) - (2 * b2.a))));
-							var n4 = ((A2(elm$core$Basics$pow, thetadot, 2) * b2len) * b2.b) * elm$core$Basics$cos(b1.a - b2.a);
-							var b1len = b1.h;
-							var n2 = (A2(elm$core$Basics$pow, b1.l, 2) * b1len) * (b1.b + b2.b);
-							return (n1 * ((n2 + n3) + n4)) / d1;
+							var b2len = b2.h / 100;
+							var d = b2len * (((2 * b1.b) + b2.b) - (b2.b * elm$core$Basics$cos(2 * (b1.a - b2.a))));
+							var n4 = (((b2.b * thetadot) * thetadot) * b2len) * elm$core$Basics$cos(b1.a - b2.a);
+							var b1len = b1.h / 100;
+							var n2 = (((b1.b + b2.b) * b1.l) * b1.l) * b1len;
+							return (n1 * ((n2 + n3) + n4)) / d;
 						default:
 							break _n1$2;
 					}
@@ -5499,7 +5499,7 @@ var author$project$Pendulum$updatePendulum = F3(
 				author$project$Pendulum$rungeKutta,
 				F2(
 					function (_n5, _n6) {
-						return b2.l;
+						return thetadot2;
 					}),
 				_Utils_Tuple2(time, b2.a),
 				step);
@@ -5507,7 +5507,7 @@ var author$project$Pendulum$updatePendulum = F3(
 				author$project$Pendulum$rungeKutta,
 				F2(
 					function (_n3, _n4) {
-						return b1.l;
+						return thetadot1;
 					}),
 				_Utils_Tuple2(time, b1.a),
 				step);
@@ -5645,7 +5645,7 @@ var author$project$Utils$init = function (l) {
 		}
 	}
 };
-var author$project$View$pageMax = 3;
+var author$project$View$pageMax = 6;
 var elm$core$Basics$not = _Basics_not;
 var elm$core$List$append = F2(
 	function (xs, ys) {
@@ -5707,9 +5707,9 @@ var author$project$Update$update = F2(
 						{
 							av: A2(
 								elm$core$List$map,
-								A2(author$project$Pendulum$updatePendulum, model.aI, 10 / 100),
+								A2(author$project$Pendulum$updatePendulum, model.aI, 30 / 2000),
 								model.av),
-							aI: model.aI + (10 / 100)
+							aI: model.aI + (30 / 2000)
 						}),
 					elm$core$Platform$Cmd$none);
 			case 3:
@@ -5770,9 +5770,9 @@ var author$project$Update$update = F2(
 						{
 							av: A2(
 								elm$core$List$map,
-								A2(author$project$Pendulum$updatePendulum, model.aI, 1),
+								A2(author$project$Pendulum$updatePendulum, model.aI, 1 / 20),
 								model.av),
-							aI: model.aI + 1
+							aI: model.aI + (1 / 20)
 						}),
 					elm$core$Platform$Cmd$none);
 			case 6:
@@ -5782,9 +5782,9 @@ var author$project$Update$update = F2(
 						{
 							av: A2(
 								elm$core$List$map,
-								A2(author$project$Pendulum$updatePendulum, model.aI, -1),
+								A2(author$project$Pendulum$updatePendulum, model.aI, (-1) / 20),
 								model.av),
-							aI: model.aI - 1
+							aI: model.aI - (1 / 20)
 						}),
 					elm$core$Platform$Cmd$none);
 			case 7:
@@ -5981,9 +5981,9 @@ var author$project$View$viewEditor = function (editors) {
 		_List_fromArray(
 			[
 				A2(elm$html$Html$Attributes$style, 'overflow-y', 'scroll'),
-				A2(elm$html$Html$Attributes$style, 'width', '25%'),
+				A2(elm$html$Html$Attributes$style, 'width', '24%'),
 				A2(elm$html$Html$Attributes$style, 'height', '540px'),
-				A2(elm$html$Html$Attributes$style, 'margin', '7px 0'),
+				A2(elm$html$Html$Attributes$style, 'margin', '1% 0'),
 				A2(elm$html$Html$Attributes$style, 'display', 'block'),
 				A2(elm$html$Html$Attributes$style, 'position', 'relative'),
 				A2(elm$html$Html$Attributes$style, 'float', 'left')
@@ -6024,14 +6024,262 @@ var author$project$View$viewEditor = function (editors) {
 };
 var author$project$Messages$NextPage = {$: 0};
 var author$project$Messages$PrevPage = {$: 1};
+var elm$html$Html$em = _VirtualDom_node('em');
+var elm$html$Html$p = _VirtualDom_node('p');
+var author$project$View$eqn = function (str) {
+	return A2(
+		elm$html$Html$p,
+		_List_fromArray(
+			[
+				A2(elm$html$Html$Attributes$style, 'text-align', 'center')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$em,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text(str)
+					]))
+			]));
+};
+var elm$html$Html$a = _VirtualDom_node('a');
+var elm$html$Html$h1 = _VirtualDom_node('h1');
+var elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
 var author$project$View$getText = function (pageNum) {
 	switch (pageNum) {
 		case 1:
-			return elm$core$Maybe$Just('This is an introduction to Chaotic Systems. A chaotic system is very sensitive to initial conditions.');
+			return elm$core$Maybe$Just(
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$h1,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Chaotic Systems')
+							])),
+						A2(
+						elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('This is an introduction to chaotic systems. Lots of people have heard the phrases \"chaos theory\" and \"the butterfly effect\", but what actually is it? Chaos theory is a study of seemingly random systems, named chaotic systems. Chaos theory states that within these random systems there are patterns and rules that appear, such as feedback loops and repetition. Chaotic systems are also very sensitive to initial conditions, meaning that the initial settings for them can cause big differences for the end result.')
+							])),
+						A2(
+						elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('This simulation is intended to give an intuition for how these systems work by editing and playing with 2 different chaotic systems. Click the next button to get started with the simulation.')
+							]))
+					]));
 		case 2:
-			return elm$core$Maybe$Just('Here is a very simple model: A single pendulum. This is not chaotic. Changing the starting angle or the length of the does not cause wildly different results,');
+			return elm$core$Maybe$Just(
+				_List_fromArray(
+					[
+						elm$html$Html$text('Before we look at chaotic systems first observe the single pendulum on the screen. This is currently not a chaotic system; the movement of the pendulum is predictable and not at all random. This is because currently the simulation does not have any extra bits which would make it chaotic. Let\'s look at how a simple pendulum, such as this is modeled. To model a pendulum like this we use '),
+						A2(
+						elm$html$Html$em,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('differential equations')
+							])),
+						elm$html$Html$text('. Despite the long name, what we need to understand isn\'t that difficult. For our purposes, a differential equation is a way of linking the position of the pendulum at any point, with the acceleration acting on it. This means given a position we can calculate the acceleration and therefore simulate the movement.'),
+						A2(
+						elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('The single pendulum equation looks like this:')
+							])),
+						author$project$View$eqn('a = A sin(θ)'),
+						A2(
+						elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Where '),
+								A2(
+								elm$html$Html$em,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text('A')
+									])),
+								elm$html$Html$text(' is an arbitrary constant, '),
+								A2(
+								elm$html$Html$em,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text('θ')
+									])),
+								elm$html$Html$text(' is the angle the pendulum makes with the normal and '),
+								A2(
+								elm$html$Html$em,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text('a')
+									])),
+								elm$html$Html$text(' is the acceleration.')
+							]))
+					]));
 		case 3:
-			return elm$core$Maybe$Just('Now we add a driving force to the pendulum. Notice now that the motion is more erratic and less predictable.');
+			return elm$core$Maybe$Just(
+				_List_fromArray(
+					[
+						elm$html$Html$text('We can make this simple model a bit more complex by adding in a damping force. This is the effect of air resistance on the pendulum. As air resistance is proportional to velocity we can model it by subtracting a multiple of the velocity from the acceleration at a given point. Try dragging the \"damping\" slider to a value higher than 0. See how the value effects the motion of the pendulum.'),
+						A2(
+						elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('The equation of motion now looks like:')
+							])),
+						author$project$View$eqn('a = A sin(θ) - Bv'),
+						A2(
+						elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Where '),
+								A2(
+								elm$html$Html$em,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text('B')
+									])),
+								elm$html$Html$text(' is an arbitrary constant, '),
+								A2(
+								elm$html$Html$em,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text('v')
+									])),
+								elm$html$Html$text(' is velocity and all other symbols are the same as previously.')
+							])),
+						A2(
+						elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('The motion at this point is however still very predictable and not at all chaotic. To begin with the chaotic system, turn over the page.')
+							]))
+					]));
+		case 4:
+			return elm$core$Maybe$Just(
+				_List_fromArray(
+					[
+						elm$html$Html$text('Now we add another piece of complexity to the model. We will do this by adding a driving force. This force will oscillate back and forth regularly with time. To add this to the differential equation, we add a \"forcing function\" which is a force independent of position. The new equaiton is:'),
+						author$project$View$eqn('a = A sin(θ) - Bv + C cos(kt)'),
+						A2(
+						elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Where '),
+								A2(
+								elm$html$Html$em,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text('C')
+									])),
+								elm$html$Html$text(' and '),
+								A2(
+								elm$html$Html$em,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text('k')
+									])),
+								elm$html$Html$text(' are both arbitrary constants and '),
+								A2(
+								elm$html$Html$em,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text('t')
+									])),
+								elm$html$Html$text(' is time.')
+							])),
+						A2(
+						elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('The forcing function is the new part of the equation. This can be used as our forcing function because '),
+								A2(
+								elm$html$Html$em,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text('cos')
+									])),
+								elm$html$Html$text(' is a function that oscillates up and down between a minimum and a maximum. The arbitrary constants allow us to change the amplitude, or maximum force applied and the frequency of the oscillations.')
+							])),
+						A2(
+						elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('This final piece of complexity makes the model chaotic. It can be finicky so play with the values till you get motion that is irregular and unpredictable. Use the the add pendulum button to add two pendulums, and compare the way they move. ')
+							]))
+					]));
+		case 5:
+			return elm$core$Maybe$Just(
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$em,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Disclaimer: In the current version of the simulation, the double pendulum does not work as expected, causing it to increase in speed over time. Hopefully the bug will be fixed soon.')
+							])),
+						A2(
+						elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Now try changing a pendulum from single to double, by pressing the \"Toggle single/double\" button. Observe how the motion is immediately complicated despite the lack of any driving or damping force. The additional weight of the second pendulum acts on the first pendulum, and the weight of the first pendulum acts on the second. This interaction between the two bobs creates the chaotic motion.')
+							])),
+						A2(
+						elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('The equations for the double pendulum are a lot more complicated to work with, so I won\'t put them here, however '),
+								A2(
+								elm$html$Html$a,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$href('http://scienceworld.wolfram.com/physics/DoublePendulum.html')
+									]),
+								_List_fromArray(
+									[
+										elm$html$Html$text('Wolfram ScienceWorld')
+									])),
+								elm$html$Html$text(' offers a fantastic set of explanations on how to derive them and how to understand them.')
+							]))
+					]));
+		case 6:
+			return elm$core$Maybe$Just(
+				_List_fromArray(
+					[
+						elm$html$Html$text('Now that we\'ve seen all the options for pendulums, try experimenting with the other features: Add more pendulums, pause and sync them, compare their motions; try messing with the sliders to create interesting motions; step forwards and backwards to watch the simulation slowly. ')
+					]));
 		default:
 			return elm$core$Maybe$Nothing;
 	}
@@ -6039,15 +6287,18 @@ var author$project$View$getText = function (pageNum) {
 var author$project$View$viewExplanation = function (pageNumber) {
 	var explanation = A2(
 		elm$core$Maybe$withDefault,
-		'error',
+		_List_fromArray(
+			[
+				elm$html$Html$text('error')
+			]),
 		author$project$View$getText(pageNumber));
 	return A2(
 		elm$html$Html$div,
 		_List_fromArray(
 			[
 				A2(elm$html$Html$Attributes$style, 'width', '25%'),
-				A2(elm$html$Html$Attributes$style, 'height', '560px'),
-				A2(elm$html$Html$Attributes$style, 'float', 'right')
+				A2(elm$html$Html$Attributes$style, 'height', '580px'),
+				A2(elm$html$Html$Attributes$style, 'float', 'left')
 			]),
 		_List_fromArray(
 			[
@@ -6060,10 +6311,7 @@ var author$project$View$viewExplanation = function (pageNumber) {
 						A2(elm$html$Html$Attributes$style, 'padding', '5px'),
 						A2(elm$html$Html$Attributes$style, 'display', 'inline-block')
 					]),
-				_List_fromArray(
-					[
-						elm$html$Html$text(explanation)
-					])),
+				explanation),
 				A2(
 				elm$html$Html$span,
 				_List_Nil,
@@ -6101,17 +6349,14 @@ var author$project$View$viewExplanation = function (pageNumber) {
 					]))
 			]));
 };
-var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$footer = _VirtualDom_node('footer');
-var elm$html$Html$Attributes$href = function (url) {
-	return A2(
-		elm$html$Html$Attributes$stringProperty,
-		'href',
-		_VirtualDom_noJavaScriptUri(url));
-};
 var author$project$View$viewFooter = A2(
 	elm$html$Html$footer,
-	_List_Nil,
+	_List_fromArray(
+		[
+			A2(elm$html$Html$Attributes$style, 'position', 'fixed'),
+			A2(elm$html$Html$Attributes$style, 'bottom', '50px')
+		]),
 	_List_fromArray(
 		[
 			elm$html$Html$text('An introduciton to chaotic systems, written in elm '),
@@ -6301,7 +6546,7 @@ var author$project$View$view = function (model) {
 								A2(elm$html$Html$Attributes$style, 'float', 'left'),
 								A2(elm$html$Html$Attributes$style, 'position', 'relative'),
 								A2(elm$html$Html$Attributes$style, 'border-style', 'solid'),
-								A2(elm$html$Html$Attributes$style, 'margin', '10px')
+								A2(elm$html$Html$Attributes$style, 'margin', '1%')
 							]),
 						_List_fromArray(
 							[
