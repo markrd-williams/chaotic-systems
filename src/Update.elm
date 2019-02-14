@@ -76,15 +76,15 @@ update msg model =
             )
 
         StepF ->
-            ( { model | pendulums = List.map (updatePendulum model.time 1) model.pendulums
-                      , time = model.time + 1
+            ( { model | pendulums = List.map (updatePendulum model.time (1/20)) model.pendulums
+                      , time = model.time + 1/20
               }
             , Cmd.none
             )
 
         StepB ->
-            ( { model | pendulums = List.map (updatePendulum model.time (-1)) model.pendulums
-                      , time = model.time - 1
+            ( { model | pendulums = List.map (updatePendulum model.time (-1/20)) model.pendulums
+                      , time = model.time - 1/20
               }
             , Cmd.none
             )

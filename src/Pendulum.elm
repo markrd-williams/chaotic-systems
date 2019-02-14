@@ -251,19 +251,19 @@ editorPendulum p =
              , { name = "damping"
                , val = String.fromFloat bob.damping
                , min = "0.0"
-               , max = "0.5"
+               , max = "1.0"
                , step = "0.01"
                }
              , { name = "drive force"
                , val = String.fromFloat bob.driving
                , min = "0.0"
-               , max = "50.0"
+               , max = "20.0"
                , step = "0.1"
               }
              , { name ="drive freq"
                , val = String.fromFloat bob.drivingFreq
                , min = "0.0"
-               , max = "1.0"
+               , max = "5.0"
                , step = "0.01"
               }
              ]]
